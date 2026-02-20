@@ -1,171 +1,206 @@
-import React, { useState, useEffect } from 'react';
-import TodoForm from './components/todoform';
-import TodoList from './components/todolist';
-import TodoFilter from './components/todofilter';
-import { FaCheckCircle, FaClipboardList } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Button, Card, Modal } from './components';
 import './App.css';
 
 const App = () => {
-  const [todos, setTodos] = useState(() => {
-    const savedTodos = localStorage.getItem('todos');
-    return savedTodos ? JSON.parse(savedTodos) : [];
-  });
-  
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('desc');
-  const [editingTodo, setEditingTodo] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('default');
 
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }, [todos]);
-
-  const addTodo = (text, priority) => {
-    const newTodo = {
-      id: Date.now(),
-      text,
-      completed: false,
-      priority,
-      createdAt: new Date().toISOString()
-    };
-    setTodos([newTodo, ...todos]);
+  const openModal = (type) => {
+    setModalType(type);
+    setIsModalOpen(true);
   };
 
-  const toggleTodo = (id) => {
-    setTodos(todos.map(todo =>
-      todo.id === id
-        ? { ...todo, completed: !todo.completed }
-        : todo
-    ));
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
-  const deleteTodo = (id) => {
-    if (window.confirm('Are you sure you want to delete this todo?')) {
-      setTodos(todos.filter(todo => todo.id !== id));
+  const getModalContent = () => {
+    switch(modalType) {
+      case 'info':
+        return {
+          title: 'Information',
+          content: 'This is an informational modal with important details about the application.',
+          footer: <Button onClick={closeModal}>Got it</Button>
+        };
+      case 'confirm':
+        return {
+          title: 'Confirm Action',
+          content: 'Are you sure you want to proceed with this action?',
+          footer: (
+            <>
+              <Button variant="outline" onClick={closeModal}>Cancel</Button>
+              <Button variant="danger" onClick={closeModal}>Confirm</Button>
+            </>
+          )
+        };
+      case 'form':
+        return {
+          title: 'User Information',
+          content: (
+            <form className="demo-form">
+              <div className="form-group">
+                <label>Name:</label>
+                <input type="text" placeholder="Enter your name" />
+              </div>
+              <div className="form-group">
+                <label>Email:</label>
+                <input type="email" placeholder="Enter your email" />
+              </div>
+            </form>
+          ),
+          footer: (
+            <>
+              <Button variant="outline" onClick={closeModal}>Cancel</Button>
+              <Button onClick={closeModal}>Submit</Button>
+            </>
+          )
+        };
+      default:
+        return {
+          title: 'Welcome Modal',
+          content: 'This is a default modal with basic content.',
+          footer: <Button onClick={closeModal}>Close</Button>
+        };
     }
   };
 
-  const editTodo = (id) => {
-    const todoToEdit = todos.find(todo => todo.id === id);
-    setEditingTodo(todoToEdit);
-  };
-
-  const updateTodo = (updatedTodo) => {
-    setTodos(todos.map(todo =>
-      todo.id === updatedTodo.id ? updatedTodo : todo
-    ));
-    setEditingTodo(null);
-  };
-
-  const clearCompleted = () => {
-    if (window.confirm('Delete all completed todos?')) {
-      setTodos(todos.filter(todo => !todo.completed));
-    }
-  };
-
-  const completedCount = todos.filter(todo => todo.completed).length;
-  const activeCount = todos.filter(todo => !todo.completed).length;
+  const modalContent = getModalContent();
 
   return (
-    <div className="min-vh-100 bg-light py-5">
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-lg-8">
-            
-            {/* Header */}
-            <div className="text-center mb-4">
-              <h1 className="display-4 fw-bold text-primary mb-3">
-                <FaClipboardList className="me-3" />
-                Todo List
-              </h1>
-              <p className="lead text-muted">
-                Stay organized and productive with Bootstrap
-              </p>
+    <div className="app">
+      <header className="app-header">
+        <h1>🎨 React Component Library</h1>
+        <p>Demo showcasing reusable Button, Card, and Modal components</p>
+      </header>
+
+      {/* Button Showcase */}
+      <section className="demo-section">
+        <h2>🔘 Button Component</h2>
+        <div className="demo-grid">
+          <div className="demo-item">
+            <h3>Variants</h3>
+            <div className="button-group">
+              <Button variant="primary">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="success">Success</Button>
+              <Button variant="danger">Danger</Button>
+              <Button variant="outline">Outline</Button>
             </div>
+          </div>
 
-            {/* Stats Cards */}
-            <div className="row g-3 mb-4">
-              <div className="col-md-4">
-                <div className="card bg-primary text-white">
-                  <div className="card-body">
-                    <h6 className="card-subtitle mb-2 text-white-50">Total</h6>
-                    <h2 className="card-title mb-0">{todos.length}</h2>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="card bg-success text-white">
-                  <div className="card-body">
-                    <h6 className="card-subtitle mb-2 text-white-50">Completed</h6>
-                    <h2 className="card-title mb-0">{completedCount}</h2>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="card bg-warning text-white">
-                  <div className="card-body">
-                    <h6 className="card-subtitle mb-2 text-white-50">Active</h6>
-                    <h2 className="card-title mb-0">{activeCount}</h2>
-                  </div>
-                </div>
-              </div>
+          <div className="demo-item">
+            <h3>Sizes</h3>
+            <div className="button-group">
+              <Button size="small">Small</Button>
+              <Button size="medium">Medium</Button>
+              <Button size="large">Large</Button>
             </div>
+          </div>
 
-            {/* Main Content */}
-            <div className="card shadow-sm">
-              <div className="card-body p-4">
-                
-                <TodoForm 
-                  onAdd={addTodo} 
-                  editingTodo={editingTodo}
-                  onUpdate={updateTodo}
-                />
-                
-                <TodoFilter 
-                  filter={filter}
-                  setFilter={setFilter}
-                  sortOrder={sortOrder}
-                  setSortOrder={setSortOrder}
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                />
-                
-                <TodoList 
-                  todos={todos}
-                  onToggle={toggleTodo}
-                  onDelete={deleteTodo}
-                  onEdit={editTodo}
-                  filter={filter}
-                  searchTerm={searchTerm}
-                  sortOrder={sortOrder}
-                />
-
-                {todos.length > 0 && (
-                  <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                    <div className="text-muted">
-                      <FaCheckCircle className="text-success me-1" />
-                      {completedCount} completed
-                    </div>
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={clearCompleted}
-                      disabled={completedCount === 0}
-                    >
-                      Clear completed
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="text-center mt-4 text-muted">
-              <small>Double click todo to edit • Powered by Bootstrap 5</small>
+          <div className="demo-item">
+            <h3>States</h3>
+            <div className="button-group">
+              <Button disabled>Disabled</Button>
+              <Button fullWidth>Full Width</Button>
+              <Button 
+                icon={<span>⭐</span>}
+                iconPosition="left"
+              >
+                With Icon
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Card Showcase */}
+      <section className="demo-section">
+        <h2>🃏 Card Component</h2>
+        <div className="card-grid">
+          <Card
+            title="Default Card"
+            subtitle="With subtitle"
+            image="https://via.placeholder.com/400x200"
+            bordered
+            elevated
+            hoverable
+            actions={
+              <>
+                <Button size="small" variant="outline">Action 1</Button>
+                <Button size="small" variant="primary">Action 2</Button>
+              </>
+            }
+          >
+            <p>This is a default card with all features enabled. It has an image, title, subtitle, and action buttons.</p>
+          </Card>
+
+          <Card
+            title="Gradient Card"
+            variant="primary"
+            hoverable
+            footer="Updated 2 mins ago"
+          >
+            <p>This card uses a primary gradient background and has a footer.</p>
+          </Card>
+
+          <Card
+            title="Simple Card"
+            bordered
+            footer={<span>📅 Due: Tomorrow</span>}
+          >
+            <p>A simple bordered card with just the essentials.</p>
+          </Card>
+        </div>
+      </section>
+
+      {/* Modal Showcase */}
+      <section className="demo-section">
+        <h2>💬 Modal Component</h2>
+        <div className="button-group">
+          <Button variant="primary" onClick={() => openModal('info')}>
+            Open Info Modal
+          </Button>
+          <Button variant="success" onClick={() => openModal('confirm')}>
+            Open Confirm Modal
+          </Button>
+          <Button variant="secondary" onClick={() => openModal('form')}>
+            Open Form Modal
+          </Button>
+        </div>
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          title={modalContent.title}
+          footer={modalContent.footer}
+          size="medium"
+          animation="pop"
+          closeOnOverlayClick
+          showCloseButton
+        >
+          {modalContent.content}
+        </Modal>
+      </section>
+
+      {/* Features Section */}
+      <section className="demo-section features">
+        <h2>✨ Key Features</h2>
+        <div className="features-grid">
+          <Card variant="primary" bordered={false}>
+            <h3>🔄 Reusable</h3>
+            <p>All components are fully customizable with props</p>
+          </Card>
+          <Card variant="secondary" bordered={false}>
+            <h3>📱 Responsive</h3>
+            <p>Works perfectly on all screen sizes</p>
+          </Card>
+          <Card variant="dark" bordered={false}>
+            <h3>🎨 Styled</h3>
+            <p>Beautiful CSS with animations and effects</p>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 };
